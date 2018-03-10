@@ -9,8 +9,8 @@
   <title>Video Searcher {% block subtitle %}{% endblock %}</title>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="{% url 'index' %}">Video Searcher</a>
+  <nav class="navbar navbar-expand-lg navbar-light bg-dark text-light">
+    <a class="navbar-brand text-light" href="{% url 'index' %}">Video Searcher</a>
     <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button> -->
@@ -21,9 +21,12 @@
     </div>
   </nav>
   <div class="container main">
-    <div class="jumbotron">
-      {% block content %}
-      {% endblock %}
+    <div id="particles-js"></div>
+    <div class="jumbotron bg-dark text-white">
+      <div class="content">
+        {% block content %}
+        {% endblock %}
+      </div>
     </div>
   </div>
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>

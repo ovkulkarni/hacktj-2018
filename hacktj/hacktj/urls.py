@@ -20,4 +20,6 @@ from web import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index_view, name='index'),
+    path('upload/', views.upload_view, name='upload_file'),
+    path('file/<fname>/', views.file_data_view, name='request_file'),
 ]

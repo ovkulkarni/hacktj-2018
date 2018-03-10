@@ -91,3 +91,4 @@ $RECYCLE.BIN/
 *.msp
 
 **.sqlite3
+uploads/
