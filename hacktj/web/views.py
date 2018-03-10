@@ -36,7 +36,6 @@ def upload_view(request):
 
 def file_data_view(request, fname):
     f = get_object_or_404(UploadedFile, name=fname)
-    print(f.auth_token)
     if not request.GET.get("auth") == f.auth_token:
         return JsonResponse({"lol": "no"})
     return JsonResponse({"lol": "yes"})
