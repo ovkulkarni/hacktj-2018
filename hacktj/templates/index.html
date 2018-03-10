@@ -3,7 +3,7 @@
 <form>
   <div class="form-group">
     <label for="vidfile">Video File</label>
-    <input type="file" class="form-control-file" id="vidfile" aria-describedby="vidhelp" placeholder="Input Video File">
+    <input type="file" accept="video/mp4" class="form-control-file" id="vidfile" aria-describedby="vidhelp" placeholder="Input Video File">
     <small id="vidhelp" class="form-text text-muted">Enter the file you want to search.</small>
   </div>
   <div class="form-group">
@@ -21,8 +21,8 @@
   </div>
   <button type="submit" class="btn btn-outline-success">Search!</button>
 </form>
-<div class="embed-responsive embed-responsive-1by1 preview" id="preview-container">
-  <video width="40%" height="30%" controls id="preview">
+<div class="embed-responsive embed-responsive-16by9 preview" id="preview-container">
+  <video controls id="preview">
     <source id="vidsrc"></source>
   </video>
 </div>
