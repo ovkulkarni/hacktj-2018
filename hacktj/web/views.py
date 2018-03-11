@@ -7,7 +7,6 @@ from pytube import YouTube
 import urllib.parse as urlparse
 import uuid
 import os
-import ast
 import video.process
 import audio.process
 
@@ -37,28 +36,33 @@ def upload_view(request):
 
 def results_view(request, vid, search_opts, search_terms):
     v = get_object_or_404(UploadedFile, video_id=vid)
-    if not ast.literal_eval(v.audio_data):
-        v.audio_data = audio.process.word_data(os.path.join(settings.UPLOAD_DIR, "{}.mp4".format(v.name)))
+    adata, vdata = dict(), dict()
+    if not eval(v.audio_data):
+        adata = audio.process.word_data(os.path.join(settings.UPLOAD_DIR, "{}.mp4".format(v.name)))
+        v.audio_data = adata
         if not v.audio_data:
             v.audio_data = "{}"
-    if not ast.literal_eval(v.video_data):
-        v.video_data = video.process.word_data(os.path.join(settings.UPLOAD_DIR, "{}.mp4".format(v.name)))
+    print(adata)
+    if not eval(v.video_data):
+        vdata = video.process.word_data(os.path.join(settings.UPLOAD_DIR, "{}.mp4".format(v.name)))
+        v.video_data = vdata
         if not v.video_data:
             v.video_data = "{}"
+    print(vdata)
     v.save()
     results = {}
-    print(v.audio_data, v.video_data)
-    adata = eval(v.audio_data)
-    vdata = eval(v.video_data)
+    if not adata:
+        adata = eval(v.audio_data)
+    if not vdata:
+        vdata = eval(v.video_data)
     if 'audio' in search_opts.lower():
         for term in search_terms.split("_"):
             if term.lower() in adata:
                 results[term.lower()] = adata[term.lower()]
     if 'image' in search_opts.lower():
         for term in search_terms.split("_"):
-            if term in vdata:
-                if term.lower() in results:
-                    results[term.lower()] += vdata[term.lower()]
-                else:
-                    results[term.lower()] = vdata[term.lower()]
+            res = video.process.find_matches(vdata, term.lower())
+            if term.lower() not in results:
+                results[term.lower()] = []
+            results[term.lower()] += res
     return JsonResponse({"results": results})

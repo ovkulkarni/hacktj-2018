@@ -1,36 +1,93 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-<form id="search-form" enctype="multipart/form-data" method="POST" action="{% url 'upload_file' %}">
-  {% csrf_token %}
- <!-- <div class="form-group">
-    <label for="vidfile">Video File</label>
-    <input type="file" name="vidfile" accept="video/mp4" class="form-control-file" id="vidfile" aria-describedby="vidhelp" placeholder="Input Video File">
-    <small id="vidhelp" class="form-text text-light">Enter the file you want to search.</small>
- </div>-->
-  <div class="form-group">
-    <label for="exampleFormControlInput1">YouTube Link</label>
-    <input required name="link" type="link" class="form-control" id="exampleFormControlInput1" placeholder="Enter YouTube Link">
+<div class="half">
+  <div class="embed-responsive embed-responsive-16by9 preview">
+    <iframe class="embed-responsive-item" src="" id="preview-frame" frameborder="0" allowfullscreen></iframe>
   </div>
-  <div class="form-group">
-    <label for="search-types">Ways to Search</label>
-    <select required multiple name="types" class="form-control-file" id="search-types" aria-describedby="type-help">
-      <option selected>Audio</option>
-      <option selected>Image</option>
-    </select>
-    <small id="type-help" class="form-text text-light">"Audio" searches through the audio of the file. "Image" searches through the visual data in the file.</small>
-  </div>
-  <div class="form-group">
-    <label for="search-text">Search Terms</label>
-    <input required name="terms" type="text" class="form-control-file" id="search-text" aria-describedby="search-help" placeholder="Enter search terms">
-    <small id="search-help" class="form-text text-light">Enter what you want to search for in the uploaded video.</small>
-  </div>
-  <button type="submit" class="btn btn-outline-success">Search!</button>
-</form>
+</div>
+<div id="real-content">
+    <form id="search-form" enctype="multipart/form-data" method="POST" action="{% url 'upload_file' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="linkinput">YouTube Link</label>
+        <input required name="link" type="link" class="form-control" id="linkinput" placeholder="Enter YouTube Link">
+      </div>
+      <div class="form-group">
+        <label for="search-types">Ways to Search</label>
+        <select required multiple name="types" class="form-control-file" id="search-types" aria-describedby="type-help">
+          <option selected>Audio</option>
+          <option selected>Image</option>
+        </select>
+        <small id="type-help" class="form-text text-light">"Audio" searches through the audio of the file. "Image" searches through the visual data in the file.</small>
+      </div>
+      <div class="form-group">
+        <label for="search-text">Search Terms</label>
+        <input required name="terms" type="text" class="form-control-file" id="search-text" aria-describedby="search-help" placeholder="Enter search terms">
+        <small id="search-help" class="form-text text-light">Enter what you want to search for in the uploaded video.</small>
+      </div>
+      <button type="submit" class="btn btn-block btn-primary">Search!</button>
+    </form>
+</div>
+<div id="results" class="hidden text-center">
+</div>
 {% endblock %}
 {% block scripts %}
 <script>
   $("#search-types").selectize();
+</script>
+<script>
+$("#linkinput").on("change", function() {
+    var url =  $(this).val();
+    var name = "v"
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    var vid = decodeURIComponent(results[2].replace(/\+/g, " "));
+    var srclink = "https://youtube.com/embed/" + vid + "?rel=0";
+    window.base_link = srclink;
+    $("#preview-frame").attr('src', srclink);
+    $(".preview").show();
+});
+</script>
+<script>
+$("#search-form").submit(function(e) {
+    var url = "{% url 'upload_file' %}"; // the script where you handle the form input.
+    e.preventDefault();
+    $(".preview").hide();
+    $("#real-content").hide();
+    $("#loading").show();
+    $.ajax({
+           type: "POST",
+           url: url,
+           data: $("#search-form").serialize(), // serializes the form's elements.
+           success: function(data)
+           {
+               $("#loading").hide();
+               if(Object.keys(data.results).length == 0) {
+                   $("#results").html("<h1>No results found :(</h1>");
+                }
+               else {
+                   for(var term in data.results){
+                       var times = data.results[term]
+                       times.sort(function(a, b){return a - b});
+                       var real_string = '<div class="btn-group mr-2" role="group" aria-label="First group">';
+                       for(var i = 0; i < times.length; i++){
+                         var t = Math.floor(times[i]);
+                         real_string += '<button type="button" class="btn btn-primary result-btn" data-val="' + t + '">' + t + '</button>';
+                       }
+                       real_string += "</div>"
+                       $("#results").append("<h3>" + term + "</h3> " + real_string);
+                   }
+                }
+                $(".result-btn").click(function(){
+                  $("#preview-frame").attr('src', window.base_link + "&autoplay=1&start=" + $(this).data('val'));
+                });
+               $(".preview").show();
+               $("#results").show();
+           }
+     });
+});
 </script>
 <script>
 $('#search-text').selectize({

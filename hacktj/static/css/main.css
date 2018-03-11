@@ -5,3 +5,53 @@
 .preview {
   display: none;
 }
+
+body {
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #2b2a2d;
+  background: linear-gradient(-45deg, #2b2a2d 0%,  #b89865 100%);
+}
+
+.half {
+  width: 75%;
+  margin: auto;
+}
+
+#loading {
+    margin: auto;
+}
+.hidden {
+    display: none;
+}
+.part {
+  height: 50%;
+  width: 100%;
+  /* position: absolute; */
+  margin: auto;
+}
+
+.svgpath {
+  fill: rgba(145,220,90,0);
+  stroke: aqua;
+  stroke-width: 1.5px;
+  stroke-dasharray: 1000;
+  stroke-linecap: round;
+  z-index: 2;
+}
+
+.svgbg {
+  fill: rgba(255,255,255,0.2);
+  z-index: 1;
+ }
+
+#playload {
+  animation: dash 2.5s reverse ease-in-out infinite;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: 2000;
+  }
+}

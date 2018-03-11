@@ -4,7 +4,7 @@ import subprocess
 import io
 import json
 import pprint
-from split import split_by_seconds
+from .split import split_by_seconds
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GOOGLE_CLOUD_SPEECH_CREDENTIALS = open(os.path.join(BASE_DIR, 'hacktj', 'cloud-speech-api-key.json')).read()
