@@ -57,7 +57,3 @@ def find_matches(dct, orig):
             continue
         times.update(dct[term])
     return sorted(times)
-
-
-table = word_data('/Users/mmreed/Downloads/Rick Astley - Never Gonna Give You Up.mp4')
-print(table)
