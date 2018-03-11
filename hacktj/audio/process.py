@@ -15,23 +15,37 @@ def flac_from_video(infile, outfile='/tmp/out.flac'):
     return outfile
 
 
-def run_splits(video, words):
+def combine_dicts(a, b):
+    if len(b) > len(a):
+        a, b = b, a
+    for k in b:
+        if k in a: a[k].extend(b[k])
+        else: a[k] = b[k]
+    return a
+
+def word_data(video, split_length=55):
     fname = flac_from_video(video)
-    fnames = split_by_seconds(fname, 55)
-    print(fnames)
-    data = []
-    for f in fnames:
-        data.append(search(f, words))
+    fname_starts = split_by_seconds(fname, split_length)
+    data = {}
+    for f, start in fname_starts:
+        word_times = search(f, add_time=start)
+        data = combine_dicts(data, word_times)
     return data
 
-
-def search(a, words):
+def search(a, add_time=0):
     r = sr.Recognizer()
     with sr.AudioFile(a) as source:
         audio = r.record(source)
-    return r.recognize_google_cloud(audio, credentials_json=GOOGLE_CLOUD_SPEECH_CREDENTIALS, show_all=True)
-
+    results = r.recognize_google_cloud(audio, credentials_json=GOOGLE_CLOUD_SPEECH_CREDENTIALS, show_all=True)
+    inner = results['results'][0]['alternatives'][0]
+    word_times = {}
+    for inst in inner['words']:
+        time = float(inst['startTime'][:-1]) + add_time
+        if inst['word'] in word_times:
+            word_times[inst['word']].append(time)
+        else: word_times[inst['word']] = [time]
+    return word_times
 
 if __name__ == "__main__":
-    x = run_splits('intro.mp4', [])
+    x = word_data('limits.mp4')
     pprint.pprint(x)
