@@ -15,12 +15,12 @@ def word_data(filename):
     cap = cv.VideoCapture(filename)
     fps = int(cap.get(cv.CAP_PROP_FPS))
     info = {}
+    cnt = 0
     while(cap.isOpened()):
         ret, frame = cap.read()
         if not ret:
             break
         cnt += 1
-        print(cnt)
         if cnt % (2 * fps) == 0:
             cv.imwrite('/tmp/temp.png', frame)
             response = model.predict_by_filename(filename='/tmp/temp.png')
@@ -36,6 +36,7 @@ def word_data(filename):
                 result[obj] = []
             if not result[obj] or result[obj] and time - result[obj][-1] > 8:
                 result[obj].append(time)
+    return result
 
 
 def noun_synonyms(word):

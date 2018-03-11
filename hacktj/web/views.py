@@ -57,12 +57,16 @@ def results_view(request, vid, search_opts, search_terms):
         vdata = eval(v.video_data)
     if 'audio' in search_opts.lower():
         for term in search_terms.split("_"):
-            if term.lower() in adata:
-                results[term.lower()] = adata[term.lower()]
+            res = audio.process.find_matches(adata, term.lower())
+            if term.lower() not in results:
+                results[term.lower()] = []
+            if res:
+                results[term.lower()] += res
     if 'image' in search_opts.lower():
         for term in search_terms.split("_"):
             res = video.process.find_matches(vdata, term.lower())
             if term.lower() not in results:
                 results[term.lower()] = []
             results[term.lower()] += res
+    print(results)
     return JsonResponse({"results": results})
