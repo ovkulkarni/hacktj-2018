@@ -4,7 +4,7 @@ import subprocess
 import io
 import json
 import pprint
-from .split import split_by_seconds
+from split import split_by_seconds
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GOOGLE_CLOUD_SPEECH_CREDENTIALS = open(os.path.join(BASE_DIR, 'hacktj', 'cloud-speech-api-key.json')).read()
@@ -31,17 +31,16 @@ def word_data(video, split_length=55):
     fname_starts = split_by_seconds(fname, split_length)
     data = {}
     for f, start in fname_starts:
-        word_times = search(f, add_time=start)
-        data = combine_dicts(data, word_times)
+        data = search(f, data, add_time=start)
     return data
 
 
-def search(a, add_time=0):
+def search(a, word_times, add_time=0):
     r = sr.Recognizer()
     with sr.AudioFile(a) as source:
         audio = r.record(source)
     results = r.recognize_google_cloud(audio, credentials_json=GOOGLE_CLOUD_SPEECH_CREDENTIALS, show_all=True)
-    word_times = {}
+
     if 'results' in results:
         for section in results['results']:
             best_alt = section['alternatives'][0]
