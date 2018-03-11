@@ -19,7 +19,7 @@ def index_view(request):
 
 @require_http_methods(["POST"])
 def upload_view(request):
-    fname = f"download_{uuid.uuid4()}"
+    fname = "download_{}".format(uuid.uuid4())
     ylink = request.POST.get("link")
     if not ylink:
         raise Http404
