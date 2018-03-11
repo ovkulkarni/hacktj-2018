@@ -41,20 +41,18 @@ def search(a, add_time=0):
     with sr.AudioFile(a) as source:
         audio = r.record(source)
     results = r.recognize_google_cloud(audio, credentials_json=GOOGLE_CLOUD_SPEECH_CREDENTIALS, show_all=True)
-    if results:
-        inner = results['results'][0]['alternatives'][0]
-        word_times = {}
-        for inst in inner['words']:
-            time = float(inst['startTime'][:-1]) + add_time
-            word = inst['word'].lower()
-            if word in word_times:
-                word_times[word].append(time)
-            else:
-                word_times[word] = [time]
-        return word_times
-    return dict()
-
+    word_times = {}
+    if 'results' in results:
+        for section in results['results']:
+            best_alt = section['alternatives'][0]
+            for inst in best_alt['words']:
+                time = float(inst['startTime'][:-1]) + add_time
+                word = inst['word'].lower()
+                if word in word_times:
+                    word_times[word].append(time)
+                else: word_times[word] = [time]
+    return word_times
 
 if __name__ == "__main__":
-    x = word_data('intro.mp4')
+    x = word_data('trump.mp4')
     pprint.pprint(x)
