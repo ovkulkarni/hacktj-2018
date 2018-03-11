@@ -1,14 +1,17 @@
 from django.conf import settings
 from django.http import Http404, JsonResponse
-from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_http_methods
-import magic
+from pytube import YouTube
+import urllib.parse as urlparse
 import uuid
 import os
+import ast
+import video.process
+import audio.process
 
 from .models import UploadedFile
-
-# Create your views here.
 
 
 def index_view(request):
@@ -17,25 +20,46 @@ def index_view(request):
 
 @require_http_methods(["POST"])
 def upload_view(request):
-    f = request.FILES.get("vidfile")
-    if not f:
-        print("no file")
+    fname = f"download_{uuid.uuid4()}"
+    ylink = request.POST.get("link")
+    if not ylink:
         raise Http404
-    m = magic.Magic(mime=True)
-    mtype = m.from_buffer(f.read())
-    if mtype != "video/mp4":
-        raise Http404
-    fname = f"upload_{uuid.uuid4()}"
-    authtok = uuid.uuid4()
-    UploadedFile.objects.create(name=fname, auth_token=authtok)
-    with open(os.path.join(settings.UPLOAD_DIR, fname), 'wb+') as dest:
-        for chunk in f.chunks():
-            dest.write(chunk)
-    return JsonResponse({"filename": fname, "authtoken": authtok, "success": True})
+    parsed = urlparse.urlparse(ylink)
+    vid = urlparse.parse_qs(parsed.query)['v'][0]
+    sterms = "_".join(request.POST.getlist("terms"))
+    sopts = "_".join(request.POST.getlist("types"))
+    if UploadedFile.objects.filter(video_id=vid).exists():
+        return redirect(reverse('results', kwargs={'vid': vid, 'search_opts': sopts, 'search_terms': sterms}))
+    YouTube(ylink).streams.filter(file_extension='mp4').first().download(output_path=settings.UPLOAD_DIR, filename=fname)
+    UploadedFile.objects.create(name=fname, video_id=vid, audio_data="{}", video_data="{}")
+    return redirect(reverse('results', kwargs={'vid': vid, 'search_opts': sopts, 'search_terms': sterms}))
 
 
-def file_data_view(request, fname):
-    f = get_object_or_404(UploadedFile, name=fname)
-    if not request.GET.get("auth") == f.auth_token:
-        return JsonResponse({"lol": "no"})
-    return JsonResponse({"lol": "yes"})
+def results_view(request, vid, search_opts, search_terms):
+    v = get_object_or_404(UploadedFile, video_id=vid)
+    if not ast.literal_eval(v.audio_data):
+        v.audio_data = audio.process.word_data(os.path.join(settings.UPLOAD_DIR, "{}.mp4".format(v.name)))
+        if not v.audio_data:
+            v.audio_data = "{}"
+    if not ast.literal_eval(v.video_data):
+        v.video_data = video.process.word_data(os.path.join(settings.UPLOAD_DIR, "{}.mp4".format(v.name)))
+        if not v.video_data:
+            v.video_data = "{}"
+    v.save()
+    results = {}
+    # print(v.audio_data, v.video_data)
+    adata = eval(v.audio_data)
+    vdata = eval(v.video_data)
+    print(adata, vdata)
+    if 'audio' in search_opts.lower():
+        for term in search_terms.split("_"):
+            if term.lower() in adata:
+                results[term.lower()] = adata[term.lower()]
+    if 'image' in search_opts.lower():
+        for term in search_terms.split("_"):
+            if term in vdata:
+                if term.lower() in results:
+                    results[term.lower()] += vdata[term.lower()]
+                else:
+                    results[term.lower()] = vdata[term.lower()]
+    return JsonResponse({"results": results})
