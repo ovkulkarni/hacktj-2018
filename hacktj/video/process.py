@@ -1,3 +1,4 @@
+import numpy as np
 import cv2 as cv
 import json
 
@@ -10,19 +11,15 @@ from nltk.corpus import wordnet
 def word_data(filename):
    app = ClarifaiApp(api_key='de12174484d04ac7ae713ce0fbf5cf56')
    model = app.models.get('general-v1.3')
-
    cap = cv.VideoCapture(filename)
-
    fps = int(cap.get(cv.CAP_PROP_FPS));
-
    info = {}
-   cnt = 0
-
    while(cap.isOpened()):
       ret, frame = cap.read()
       if not ret:
          break
       cnt+=1
+      print(cnt)
       if cnt%(2*fps)==0:
          cv.imwrite('/tmp/temp.png', frame)
          response = model.predict_by_filename(filename='/tmp/temp.png')
@@ -31,14 +28,13 @@ def word_data(filename):
          for res in response['outputs'][0]['data']['concepts']:
             if res['value']>0.93:
                info[time].append(res['name'])
-
-
    result = {}
    for time in info:
       for obj in info[time]:
          if not obj in result:
             result[obj] = []
-         result[obj].append(time)
+         if not result[obj] or result[obj] and time-result[obj][-1]>8:
+            result[obj].append(time)
 
    return result
 
@@ -58,3 +54,6 @@ def find_matches(dct, orig):
         if term not in dct: continue
         times.update(dct[term])
     return sorted(times)
+
+table = word_data('/Users/mmreed/Downloads/Rick Astley - Never Gonna Give You Up.mp4')
+print(table)
