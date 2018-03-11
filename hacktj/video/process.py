@@ -4,6 +4,9 @@ import json
 from clarifai import rest
 from clarifai.rest import ClarifaiApp
 
+from nltk.stem.wordnet import WordNetLemmatizer
+from nltk.corpus import wordnet
+
 def word_data(filename):
    app = ClarifaiApp(api_key='de12174484d04ac7ae713ce0fbf5cf56')
    model = app.models.get('general-v1.3')
@@ -11,13 +14,13 @@ def word_data(filename):
    cap = cv.VideoCapture(filename)
 
    fps = int(cap.get(cv.CAP_PROP_FPS));
- 
+
    info = {}
    cnt = 0
 
    while(cap.isOpened()):
       ret, frame = cap.read()
-      if not ret: 
+      if not ret:
          break
       cnt+=1
       if cnt%(2*fps)==0:
@@ -29,7 +32,7 @@ def word_data(filename):
             if res['value']>0.93:
                info[time].append(res['name'])
 
-   
+
    result = {}
    for time in info:
       for obj in info[time]:
@@ -38,3 +41,20 @@ def word_data(filename):
          result[obj].append(time)
 
    return result
+
+def noun_synonyms(word):
+    synonyms = set()
+    for syn in wordnet.synsets(word):
+        if syn.name().split('.')[1] != 'n': continue
+        for l in syn.lemmas():
+            synonyms.add(l.name())
+    return synonyms
+
+def find_matches(dct, orig):
+    lm = WordNetLemmatizer()
+    word = lm.lemmatize(orig)
+    times = set()
+    for term in noun_synonyms(word):
+        if term not in dct: continue
+        times.update(dct[term])
+    return sorted(times)
