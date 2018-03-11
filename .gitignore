@@ -89,3 +89,6 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
+
+**.sqlite3
+uploads/

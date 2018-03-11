@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<form id="search-form" enctype="multipart/form-data" method="POST" action="{% url 'upload_file' %}">
+  {% csrf_token %}
+  <div class="form-group">
+    <label for="vidfile">Video File</label>
+    <input type="file" name="vidfile" accept="video/mp4" class="form-control-file" id="vidfile" aria-describedby="vidhelp" placeholder="Input Video File">
+    <small id="vidhelp" class="form-text text-light">Enter the file you want to search.</small>
+  </div>
+  <div class="form-group">
+    <label for="search-types">Ways to Search</label>
+    <select multiple name="types" class="form-control-file" id="search-types" aria-describedby="type-help">
+      <option selected>Audio</option>
+      <option selected>Image</option>
+    </select>
+    <small id="type-help" class="form-text text-light">"Audio" searches through the audio of the file. "Image" searches through the visual data in the file.</small>
+  </div>
+  <div class="form-group">
+    <label for="search-text">Search Terms</label>
+    <input name="terms" type="text" class="form-control" id="search-text" aria-describedby="search-help" placeholder="Enter search terms">
+    <small id="search-help" class="form-text text-light">Enter what you want to search for in the uploaded video.</small>
+  </div>
+  <button type="submit" class="btn btn-outline-success">Search!</button>
+</form>
+<div class="embed-responsive embed-responsive-16by9 preview" id="preview-container">
+  <video controls id="preview">
+    <source id="vidsrc"></source>
+  </video>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  $("#search-types").selectize();
+</script>
+<script>
+  $("#vidfile").on("change", function(evt) {
+    var $source = $('#vidsrc');
+    $source[0].src = URL.createObjectURL(this.files[0]);
+    $source.parent()[0].load();
+    $("#preview-container").show();
+  });
+</script>
+{% endblock %}
