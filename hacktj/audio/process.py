@@ -41,11 +41,12 @@ def search(a, add_time=0):
     word_times = {}
     for inst in inner['words']:
         time = float(inst['startTime'][:-1]) + add_time
-        if inst['word'] in word_times:
-            word_times[inst['word']].append(time)
-        else: word_times[inst['word']] = [time]
+        word = inst['word'].lower()
+        if word in word_times:
+            word_times[word].append(time)
+        else: word_times[word] = [time]
     return word_times
 
 if __name__ == "__main__":
-    x = word_data('limits.mp4')
+    x = word_data('intro.mp4')
     pprint.pprint(x)
