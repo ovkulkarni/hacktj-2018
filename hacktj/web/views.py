@@ -47,10 +47,9 @@ def results_view(request, vid, search_opts, search_terms):
             v.video_data = "{}"
     v.save()
     results = {}
-    # print(v.audio_data, v.video_data)
+    print(v.audio_data, v.video_data)
     adata = eval(v.audio_data)
     vdata = eval(v.video_data)
-    print(adata, vdata)
     if 'audio' in search_opts.lower():
         for term in search_terms.split("_"):
             if term.lower() in adata:
