@@ -1,10 +1,12 @@
 import speech_recognition as sr
+import subprocess
+import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 gcloud_apikey_path = os.path.join(BASE_DIR, 'hacktj/cloud-speech-api-key.json')
 
 def flac_from_video(infile, outfile='/tmp/out.flac'):
-    subprocess.run("ffmpeg -y -loglevel PANIC -i {} -c:a flac {}".format(infile, outfile), shell=True)
+    subprocess.run("ffmpeg -y -loglevel panic -i {} -c:a flac {}".format(infile, outfile), shell=True)
     return outfile
 
 def search(video, phrases):
@@ -19,7 +21,7 @@ def search(video, phrases):
 
     GOOGLE_CLOUD_SPEECH_CREDENTIALS = open(gcloud_apikey_path).read()
     try:
-        print("Google Cloud Speech thinks you said " + r.recognize_google_cloud(audio, credentials_json=GOOGLE_CLOUD_SPEECH_CREDENTIALS))
+        print(r.recognize_google_cloud(audio, credentials_json=GOOGLE_CLOUD_SPEECH_CREDENTIALS))
     except sr.UnknownValueError:
         print("Google Cloud Speech could not understand audio")
     except sr.RequestError as e:
