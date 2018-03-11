@@ -3,10 +3,14 @@
 {% block content %}
 <form id="search-form" enctype="multipart/form-data" method="POST" action="{% url 'upload_file' %}">
   {% csrf_token %}
-  <div class="form-group">
+ <!-- <div class="form-group">
     <label for="vidfile">Video File</label>
     <input type="file" name="vidfile" accept="video/mp4" class="form-control-file" id="vidfile" aria-describedby="vidhelp" placeholder="Input Video File">
     <small id="vidhelp" class="form-text text-light">Enter the file you want to search.</small>
+ </div>-->
+ <div class="form-group">
+    <label for="exampleFormControlInput1">YouTube Link</label>
+    <input type="link" class="form-control" id="exampleFormControlInput1" placeholder="Enter YouTube Link">
   </div>
   <div class="form-group">
     <label for="search-types">Ways to Search</label>
@@ -18,7 +22,7 @@
   </div>
   <div class="form-group">
     <label for="search-text">Search Terms</label>
-    <input name="terms" type="text" class="form-control" id="search-text" aria-describedby="search-help" placeholder="Enter search terms">
+    <input name="terms" type="text" class="form-control-file" id="search-text" aria-describedby="search-help" placeholder="Enter search terms">
     <small id="search-help" class="form-text text-light">Enter what you want to search for in the uploaded video.</small>
   </div>
   <button type="submit" class="btn btn-outline-success">Search!</button>
@@ -41,4 +45,16 @@
     $("#preview-container").show();
   });
 </script>
+<script>
+$('#search-text').selectize({
+    delimiter: ',',
+    persist: false,
+    create: function(input) {
+        return {
+            value: input,
+            text: input
+        }
+    }
+});
+	</script>
 {% endblock %}
